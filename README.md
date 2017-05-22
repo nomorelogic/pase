@@ -12,7 +12,7 @@ Currently focused in data modeling, in embrional and experimental state: is not 
       |
       +- User data type 
          |
-         +- Analiys (to do)
+         +- Technical documentation (to do)
          |
          +- RDBMS Implementation
             |
