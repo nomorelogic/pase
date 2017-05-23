@@ -1,0 +1,113 @@
+unit upase_diagram_employee;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils
+  , upaseglobals
+  , upasetypes
+  ;
+
+procedure CreateDiagramEmployee(Analysis: TPaseModel);
+
+
+implementation
+
+procedure CreateDiagramEmployee(Analysis: TPaseModel);
+var CurrEntity: integer;
+begin
+  Analysis.Name:='Employee';
+  Analysis.Caption:='Analisi analisi employee';
+  Analysis.Release:='0.1';
+
+  // user data type
+  {
+  Analysis.AddUserType('ADDRESSLINE', 'SizedString', 30);
+  Analysis.AddUserType('BUDGET', 'Float', 12, 2)
+     .SetDefaultValue(50000)
+     .SetCheckValue('CHECK (VALUE > 10000 AND VALUE <= 2000000)');
+  Analysis.AddUserType('COUNTRYNAME', 'SizedString', 15);
+  Analysis.AddUserType('CUSTNO', 'Integer')
+     .SetCheckValue('CHECK (VALUE > 1000)');
+  Analysis.AddUserType('DEPTNO', 'FixedString', 3)
+     .SetCheckValue('CHECK (VALUE = ''000'' OR (VALUE > ''0'' AND VALUE <= ''999'') OR VALUE IS NULL)');
+  Analysis.AddUserType('EMPNO', 'Smallint');
+  Analysis.AddUserType('FIRSTNAME', 'SizedString', 15);
+  Analysis.AddUserType('JOBCODE', 'SizedString', 5)
+     .SetCheckValue('CHECK (VALUE > ''99999'')');
+  Analysis.AddUserType('JOBGRADE', 'Smallint')
+     .SetCheckValue('CHECK (VALUE BETWEEN 0 AND 6)');
+  Analysis.AddUserType('LASTNAME', 'SizedString', 20);
+  Analysis.AddUserType('PHONENUMBER', 'SizedString', 20);
+  Analysis.AddUserType('PONUMBER', 'FixedString', 8)
+     .SetCheckValue('CHECK (VALUE STARTING WITH ''V'')')
+     .HasFixedSize:=TRUE;
+  }
+  Analysis.AddUserType('PRODTYPE', 'SizedString', 12)
+     .SetCheckValue('CHECK (VALUE IN (''software'', ''hardware'', ''other'', ''N/A''))')
+     .SetDefaultValue('software')
+     .SetRequired(True);
+  {
+  Analysis.AddUserType('PROJNO', 'FixedString', 5)
+     .SetCheckValue('CHECK (VALUE = UPPER (VALUE))');
+  Analysis.AddUserType('SALARY', 'Float', 10, 2)
+     .SetDefaultValue(0)
+     .SetCheckValue('CHECK (VALUE > 0)');
+  }
+  // user table
+  {
+  CurrEntity:=Analysis.AddEntity('COUNTRY', 'COUNTRY TABLE');
+  with Analysis.Entities[CurrEntity] do begin
+     with Fields[ AddField('COUNTRY',  'COUNTRYNAME',     'Country name') ] do Attributes:=[pfaRequired];
+     with Fields[ AddField('CURRENCY', 'SizedString', 10, 'Currency name') ] do Attributes:=[pfaRequired];
+     // AddCheck('INTEG_999', 'FIREBIRD', '(on_hold IS NULL OR on_hold = ''*'')');
+     AddIndex('INTEG_2', True, ['COUNTRY']);
+  end;
+
+
+  CurrEntity:=Analysis.AddEntity('CUSTOMER', 'CUSTOMER TABLE');
+  with Analysis.Entities[CurrEntity] do begin
+     with Fields[ AddField('CUST_NO',        'CUSTNO',          'Customer number') ]    do Attributes:=[pfaRequired];
+     with Fields[ AddField('CUSTOMER',       'SizedString', 25, 'Customer') ]           do Attributes:=[pfaRequired];
+          Fields[ AddField('CONTACT_FIRST',  'FIRSTNAME',       'Contact first name') ] ;
+          Fields[ AddField('CONTACT_LAST',   'LASTNAME',        'Contact last name') ]  ;
+          Fields[ AddField('PHONE_NO',       'PHONENUMBER',     'Phone number') ]       ;
+          Fields[ AddField('ADDRESS_LINE1',  'ADDRESSLINE',     'Address') ]            ;
+          Fields[ AddField('ADDRESS_LINE2',  'ADDRESSLINE',     'Address line 2') ]     ;
+          Fields[ AddField('CITY',           'SizedString', 25, 'City') ]               ;
+          Fields[ AddField('STATE_PROVINCE', 'SizedString', 15, 'State') ]              ;
+          Fields[ AddField('COUNTRY',        'COUNTRYNAME',     'Country') ]            ;
+          Fields[ AddField('POSTAL_CODE',    'SizedString', 12, 'Postal code') ]        ;
+     with Fields[ AddField('ON_HOLD',        'SizedString',  1, 'On Hold') ]            do SetDefaultValueAsNull;
+
+     AddCheck('INTEG_59', 'FIREBIRD', '(on_hold IS NULL OR on_hold = ''*'')');
+     AddIndex('INTEG_60', True, ['CUST_NO']);
+     AddIndex('CUSTNAMEX', False, ['CUSTOMER']);
+     AddIndex('CUSTREGION', False, ['COUNTRY', 'CITY']);
+
+     // ALTER TABLE CUSTOMER ADD CONSTRAINT INTEG_61 FOREIGN KEY (COUNTRY) REFERENCES COUNTRY (COUNTRY);
+     AddForeignKey('INTEG_61', ['COUNTRY'], Analysis.GetEntityByName('COUNTRY'), ['COUNTRY']);
+
+     // GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON CUSTOMER TO  "PUBLIC" WITH GRANT OPTION;
+     // GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON CUSTOMER TO  SYSDBA WITH GRANT OPTION;
+  end;
+  }
+  {
+  CurrEntity:=Analysis.AddEntity('DEPARTMENT', 'DEPARTMENT TABLE');
+  with Analysis.Entities[CurrEntity] do begin
+     with Fields[ AddField('DEPT_NO',    'DEPTNO',             'Department ID') ] do Attributes:=[pfaRequired];
+     with Fields[ AddField('DEPARTMENT', 'SizedString', 25,    'Department') ]   do Attributes:=[pfaRequired];
+          Fields[ AddField('HEAD_DEPT',  'DEPTNO',             'Head dept. ID') ] ;
+          Fields[ AddField('MNGR_NO',    'EMPNO',              'Manager ID') ]    ;
+          Fields[ AddField('BUDGET',     'BUDGET',      12, 2, 'Budget') ]        ;
+          Fields[ AddField('LOCATION',   'SizedString', 15,    'Location') ]      ;
+     with Fields[ AddField('PHONE_NO',   'PHONENUMBER',        'Phone number') ]  do SetDefaultValueAsString('555-1234');
+     //with Fields[ AddField('', 'SizedString', '') ] do Attributes:=[];
+  end;
+}
+
+end;
+
+end.
